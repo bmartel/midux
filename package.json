@@ -24,9 +24,9 @@
   "author": "Brandon Martel",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/bmartel/mithril-redux/issues"
+    "url": "https://github.com/bmartel/midux/issues"
   },
-  "homepage": "https://github.com/bmartel/mithril-redux#readme",
+  "homepage": "https://github.com/bmartel/midux#readme",
   "devDependencies": {
     "babel-cli": "^6.4.5",
     "babel-core": "^6.4.5",
