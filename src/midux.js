@@ -20,16 +20,17 @@ export const connectStore = (store) =>
     controller(props) {
       this.store = store;
       this.state = m.prop({});
-      this.shouldComponentUpdate = m.prop(true);
       this.unsubscribe = null;
       this.actions = bindActionCreators(mapActionCreators, this.store.dispatch);
       this.config = (el, init, ctx) => {
-        ctx.onunload = () => {
-          this.actions = null;
-          this.store = null;
-          this.state = null;
-          this.shouldComponentUpdate = null;
-          this.tryUnsubscribe();
+        if (!init) {
+          ctx.onunload = () => {
+            console.log('unloading');
+            this.actions = null;
+            this.store = null;
+            this.state = null;
+            this.tryUnsubscribe();
+          }
         }
       };
 
@@ -66,30 +67,20 @@ export const connectStore = (store) =>
 
       this.handleUpdate = (props) => {
         if (!this.isSubscribed()) return true;
+        const ownProps = props || {};
+        const storeState = mapStateToProps(this.store.getState(), ownProps);
 
-        const prevStoreState = this.state();
-        const storeState = mapStateToProps(this.store.getState(), props);
-
-        if (!shallowEqual(prevStoreState, storeState)) {
-          this.state(storeState);
-          this.shouldComponentUpdate(true);
-        }
+        this.state(storeState);
       };
 
       this.trySubscribe();
     },
 
     view (ctrl, props, children) {
-      const {config, actions, state, shouldComponentUpdate} = ctrl;
-      const shouldUpdate = shouldComponentUpdate();
-      shouldComponentUpdate(false);
+      const {config, actions, state} = ctrl;
+      const storeProps = state();
 
-      if (shouldUpdate) {
-        const storeProps = state();
-        return m(component, {actions, ...storeProps}, children);
-      }
-
-      return {subtree: 'retain'};
+      return m(component, {config, actions, ...props, ...storeProps}, children);
     }
   }
 }
@@ -113,28 +104,4 @@ export const configureStore = (reducers, middleware=[]) => {
    * Create data store from the defined data shape
    */
   return createStoreWithMiddleware(appState);
-}
-
-// Taken and modified from https://github.com/rackt/react-redux/blob/master/src/utils/shallowEqual.js
-// Check for props equality on a single nested level
-export function shallowEqual(objA, objB) {
-  if (objA === objB) return true;
-
-  const keysA = Object.keys(objA);
-  const keysB = Object.keys(objB);
-
-  if (keysA.length !== keysB.length) return false;
-
-  // Test for A's keys different from B.
-  const hasOwn = Object.prototype.hasOwnProperty;
-
-  let i = keysA.length;
-  while(i--) {
-    if (
-      !hasOwn.call(objB, keysA[i]) ||
-      objA[keysA[i]] !== objB[keysA[i]]
-    ) return false;
-  }
-
-  return true;
 }
