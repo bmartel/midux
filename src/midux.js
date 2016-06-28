@@ -91,17 +91,16 @@ export const connectStore = (store) =>
 export const configureStore = (reducers, middleware=[]) => {
 
   /**
-   * Configure app middleware based on environment
+   * Build app state defined by data reducers shape
    */
-  const createStoreWithMiddleware = applyMiddleware(...middleware)(createStore);
-
-  /**
-   * Build app state defined by data reducers
-   */
-  const appState = combineReducers(reducers);
+  const initialState = window.__INITIAL_STATE__ || {};
 
   /**
    * Create data store from the defined data shape
    */
-  return createStoreWithMiddleware(appState);
+  return createStore(
+    combineReducers(reducers),
+    initialState,
+    applyMiddleware(...middleware)
+  );
 }
