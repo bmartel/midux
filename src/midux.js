@@ -1,10 +1,7 @@
 import m from 'mithril';
-import {
-  createStore,
-  applyMiddleware,
-  combineReducers,
-  bindActionCreators
-} from 'redux';
+import { bindActionCreators } from 'redux';
+
+export * from './store';
 
 export const defaultMapStateToProps = (state, props) => state;
 
@@ -83,25 +80,4 @@ export const connectStore = (store) =>
       return m(component, {config, actions, ...props, ...storeProps}, children);
     }
   }
-}
-
-/**
-* Configure store to use reducers/middleware
-*/
-export const configureStore = (reducers, middleware=[]) => {
-
-  /**
-   * Configure app middleware based on environment
-   */
-  const createStoreWithMiddleware = applyMiddleware(...middleware)(createStore);
-
-  /**
-   * Build app state defined by data reducers
-   */
-  const appState = combineReducers(reducers);
-
-  /**
-   * Create data store from the defined data shape
-   */
-  return createStoreWithMiddleware(appState);
 }
