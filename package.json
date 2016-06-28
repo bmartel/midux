@@ -1,12 +1,12 @@
 {
   "name": "midux",
-  "version": "0.1.1",
+  "version": "0.1.6",
   "description": "A simple adapter for mithril and redux",
-  "main": "./lib/midux.js",
+  "main": "lib/midux.js",
   "scripts": {
-    "build": "babel -d lib/ src/",
+    "compile": "babel -d lib/ src/",
     "clean": "rimraf lib",
-    "prepublish": "npm run clean && npm run build",
+    "prepublish": "npm run clean && npm run compile",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -36,13 +36,12 @@
     "babel-preset-stage-0": "^6.3.13",
     "babel-runtime": "^6.3.19",
     "mithril": "^0.2.5",
-    "redux": "^3.3.0",
+    "redux": "^3.5.2",
     "rimraf": "^2.5.1",
-    "ud": "^3.0.1",
     "webpack": "^1.12.13"
   },
   "peerDependencies": {
     "mithril": "^0.2.5",
-    "redux": "^3.3.0"
+    "redux": "^3.5.2"
   }
 }
