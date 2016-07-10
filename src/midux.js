@@ -15,23 +15,18 @@ export const defaultMapStateToProps = (state, props) => state;
  * @returns {*}
  */
 export const connectStore = (store) =>
-  (mapStateToProps, mapActionCreators={}) => (component) => {
+  (mapStateToProps, mapActionCreators = {}) => (component) => {
   return {
     controller(props) {
       this.store = store;
       this.state = m.prop({});
       this.unsubscribe = null;
       this.actions = bindActionCreators(mapActionCreators, this.store.dispatch);
-      this.config = (el, init, ctx) => {
-        if (!init) {
-          ctx.onunload = () => {
-            console.log('unloading');
-            this.actions = null;
-            this.store = null;
-            this.state = null;
-            this.tryUnsubscribe();
-          }
-        }
+      const onunload = (e) => {
+        this.actions = null;
+        this.store = null;
+        this.state = null;
+        this.tryUnsubscribe();
       };
 
       const originalController = component.controller;
@@ -44,8 +39,8 @@ export const connectStore = (store) =>
         }
 
         return {
-          ...controllerData,
-          config: this.config
+          onunload,
+          ...controllerData
         }
       };
 
@@ -77,10 +72,10 @@ export const connectStore = (store) =>
     },
 
     view (ctrl, props, children) {
-      const {config, actions, state} = ctrl;
+      const { actions, state } = ctrl;
       const storeProps = state();
 
-      return m(component, {config, actions, ...props, ...storeProps}, children);
+      return m(component, { actions, ...props, ...storeProps }, children);
     }
   }
 }
@@ -88,7 +83,7 @@ export const connectStore = (store) =>
 /**
 * Configure store to use reducers/middleware
 */
-export const configureStore = (reducers, middleware=[]) => {
+export const configureStore = (reducers, middleware = []) => {
 
   /**
    * Build app state defined by data reducers shape
