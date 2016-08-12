@@ -76,7 +76,7 @@ export const connectStore = (store) =>
     },
 
     view (ctrl, props, children) {
-      const { actions, state } = ctrl;
+      const { config, actions, state } = ctrl;
       const storeProps = state();
 
       return m(component, { config, actions, ...storeProps, ...props}, children);
