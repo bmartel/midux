@@ -22,11 +22,15 @@ export const connectStore = (store) =>
       this.state = m.prop({});
       this.unsubscribe = null;
       this.actions = bindActionCreators(mapActionCreators, this.store.dispatch);
-      const onunload = (e) => {
-        this.actions = null;
-        this.store = null;
-        this.state = null;
-        this.tryUnsubscribe();
+      const config = (el, isInit, ctx) => {
+        if (!isInit) {
+          ctx.onunload = () => {
+            this.actions = null;
+            this.store = null;
+            this.state = null;
+            this.tryUnsubscribe();
+          };
+        }
       };
 
       const originalController = component.controller;
@@ -39,7 +43,7 @@ export const connectStore = (store) =>
         }
 
         return {
-          onunload,
+          config,
           ...controllerData
         }
       };
@@ -75,7 +79,7 @@ export const connectStore = (store) =>
       const { actions, state } = ctrl;
       const storeProps = state();
 
-      return m(component, { actions, ...props, ...storeProps }, children);
+      return m(component, { config, actions, ...storeProps, ...props}, children);
     }
   }
 }
