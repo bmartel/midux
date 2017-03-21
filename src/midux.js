@@ -1,4 +1,5 @@
 import m from 'mithril';
+import prop from 'mithril/stream';
 import {
   createStore,
   applyMiddleware,
@@ -16,34 +17,25 @@ export const defaultMapStateToProps = (state, props) => state;
  */
 export const connectStore = (store) =>
   (mapStateToProps, mapActionCreators = {}) => (component) => {
+  console.log('MIDUX:connectStore store %o, component %o', store, component);
   return {
-    controller(props) {
+    oninit(vnode) {
+      console.log('MIDUX:connectStore oninit vnode %o', vnode);
       this.store = store;
-      this.state = m.prop({});
+      this.state = prop({});
       this.unsubscribe = null;
       this.actions = bindActionCreators(mapActionCreators, this.store.dispatch);
-      const config = (el, isInit, ctx) => {
-        if (!isInit) {
-          ctx.onunload = () => {
-            this.actions = null;
-            this.store = null;
-            this.state = null;
-            this.tryUnsubscribe();
-          };
-        }
-      };
 
-      const originalController = component.controller;
+      const originalOninit = component.oninit;
 
-      component.controller = (props) => {
+      component.oninit = (vnode) => {
         let controllerData = {};
 
-        if (originalController) {
-          controllerData = originalController.call(component, props);
+        if (originalOninit) {
+          controllerData = originalOninit.call(component, vnode);
         }
 
         return {
-          config,
           ...controllerData
         }
       };
@@ -52,8 +44,8 @@ export const connectStore = (store) =>
 
       this.trySubscribe = () => {
         if (!this.isSubscribed()) {
-          this.unsubscribe = this.store.subscribe(this.handleUpdate.bind(this, props));
-          this.handleUpdate(props);
+          this.unsubscribe = this.store.subscribe(this.handleUpdate.bind(this, vnode.attrs));
+          this.handleUpdate(vnode);
         }
       };
 
@@ -64,9 +56,9 @@ export const connectStore = (store) =>
         }
       };
 
-      this.handleUpdate = (props) => {
+      this.handleUpdate = (vnode) => {
         if (!this.isSubscribed()) return true;
-        const ownProps = props || {};
+        const ownProps = vnode.attrs || {};
         const storeState = mapStateToProps(this.store.getState(), ownProps);
 
         this.state(storeState);
@@ -75,11 +67,19 @@ export const connectStore = (store) =>
       this.trySubscribe();
     },
 
-    view (ctrl, props, children) {
-      const { config, actions, state } = ctrl;
+    onremove(vnode) {
+      this.actions = null;
+      this.store = null;
+      this.state = null;
+      this.tryUnsubscribe();
+    },
+
+    view (vnode, children) {
+      console.log('MIDUX:connectStore view vnode %o', vnode);
+      const { config, actions, state } = vnode.state;
       const storeProps = state();
 
-      return m(component, { config, actions, ...storeProps, ...props}, children);
+      return m(component, { config, actions, ...storeProps, ...vnode.attrs}, children);
     }
   }
 }
@@ -88,7 +88,7 @@ export const connectStore = (store) =>
 * Configure store to use reducers/middleware
 */
 export const configureStore = (reducers, middleware = []) => {
-
+  console.log('MIDUX:configureStore store reducers %o, middleware %o', reducers, middleware);
   /**
    * Build app state defined by data reducers shape
    */
