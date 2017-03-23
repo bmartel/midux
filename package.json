@@ -35,13 +35,13 @@
     "babel-preset-es2015": "^6.3.13",
     "babel-preset-stage-0": "^6.3.13",
     "babel-runtime": "^6.3.19",
-    "mithril": "^0.2.5",
+    "mithril": "^1.0.1",
     "redux": "^3.5.2",
     "rimraf": "^2.5.1",
     "webpack": "^1.12.13"
   },
   "peerDependencies": {
-    "mithril": "^0.2.5",
+    "mithril": "^1.0.1",
     "redux": "^3.5.2"
   }
 }
