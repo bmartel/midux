@@ -17,10 +17,8 @@ export const defaultMapStateToProps = (state, props) => state;
  */
 export const connectStore = (store) =>
   (mapStateToProps, mapActionCreators = {}) => (component) => {
-  console.log('MIDUX:connectStore store %o, component %o', store, component);
   return {
     oninit(vnode) {
-      console.log('MIDUX:connectStore oninit vnode %o', vnode);
       this.store = store;
       this.state = prop({});
       this.unsubscribe = null;
@@ -75,7 +73,6 @@ export const connectStore = (store) =>
     },
 
     view (vnode, children) {
-      console.log('MIDUX:connectStore view vnode %o', vnode);
       const { config, actions, state } = vnode.state;
       const storeProps = state();
 
@@ -88,7 +85,6 @@ export const connectStore = (store) =>
 * Configure store to use reducers/middleware
 */
 export const configureStore = (reducers, middleware = []) => {
-  console.log('MIDUX:configureStore store reducers %o, middleware %o', reducers, middleware);
   /**
    * Build app state defined by data reducers shape
    */
