@@ -1,3 +1,4 @@
+/* eslint-disable */
 import m from 'mithril';
 import prop from 'mithril/stream';
 import {
@@ -23,20 +24,6 @@ export const connectStore = (store) =>
       this.state = prop({});
       this.unsubscribe = null;
       this.actions = bindActionCreators(mapActionCreators, this.store.dispatch);
-
-      const originalOninit = component.oninit;
-
-      component.oninit = (vnode) => {
-        let controllerData = {};
-
-        if (originalOninit) {
-          controllerData = originalOninit.call(component, vnode);
-        }
-
-        return {
-          ...controllerData
-        }
-      };
 
       this.isSubscribed = () => typeof this.unsubscribe === 'function';
 
@@ -73,10 +60,10 @@ export const connectStore = (store) =>
     },
 
     view (vnode, children) {
-      const { config, actions, state } = vnode.state;
+      const { actions, state } = vnode.state;
       const storeProps = state();
 
-      return m(component, { config, actions, ...storeProps, ...vnode.attrs}, children);
+      return m(component, { actions, ...storeProps, ...vnode.attrs}, children);
     }
   }
 }
