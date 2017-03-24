@@ -21,7 +21,7 @@ export const connectStore = (store) =>
   return {
     oninit(vnode) {
       this.store = store;
-      this.state = prop({});
+      this.componentState = prop({});
       this.unsubscribe = null;
       this.actions = bindActionCreators(mapActionCreators, this.store.dispatch);
 
@@ -29,7 +29,7 @@ export const connectStore = (store) =>
 
       this.trySubscribe = () => {
         if (!this.isSubscribed()) {
-          this.unsubscribe = this.store.subscribe(this.handleUpdate.bind(this, vnode.attrs));
+          this.unsubscribe = this.store.subscribe(this.handleUpdate.bind(this, vnode));
           this.handleUpdate(vnode);
         }
       };
@@ -46,7 +46,7 @@ export const connectStore = (store) =>
         const ownProps = vnode.attrs || {};
         const storeState = mapStateToProps(this.store.getState(), ownProps);
 
-        this.state(storeState);
+        this.componentState(storeState);
       };
 
       this.trySubscribe();
@@ -55,13 +55,13 @@ export const connectStore = (store) =>
     onremove(vnode) {
       this.actions = null;
       this.store = null;
-      this.state = null;
+      this.componentState = null;
       this.tryUnsubscribe();
     },
 
     view (vnode, children) {
-      const { actions, state } = vnode.state;
-      const storeProps = state();
+      const actions = this.actions;
+      const storeProps = this.componentState();
 
       return m(component, { actions, ...storeProps, ...vnode.attrs}, children);
     }
