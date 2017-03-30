@@ -107,15 +107,11 @@ export const connectStore = (store) =>
  * Configure store to use reducers/middleware
  *
  * @param reducers
+ * @param initialState
  * @param middleware
  * @returns {Store<S>}
  */
-export const configureStore = (reducers, middleware = []) => {
-  /**
-   * Build app state defined by data reducers shape
-   */
-  const initialState = window.__INITIAL_STATE__ || {}
-
+export const configureStore = (reducers, initialState = {}, middleware = []) => {
   /**
    * Create data store from the defined data shape
    */
