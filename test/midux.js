@@ -95,7 +95,7 @@ describe('midux', () => {
     it('can initialize store with middleware', () => {
       const store = configureStore({
         page: testReducer
-      }, [
+      }, {}, [
         testMiddleware
       ])
       expect(store).to.have.property('dispatch')
@@ -106,7 +106,7 @@ describe('midux', () => {
     it('can initialize store connection', () => {
       const store = configureStore({
         page: testReducer
-      }, [
+      }, {}, [
         testMiddleware
       ])
       const connect = connectStore(store)
@@ -115,7 +115,7 @@ describe('midux', () => {
     it('can connect component to store', () => {
       const store = configureStore({
         page: testReducer
-      }, [
+      }, {}, [
         testMiddleware
       ])
       const connect = connectStore(store)
@@ -127,7 +127,7 @@ describe('midux', () => {
     it('can connect component with action and successfully dispatch an update', () => {
       const store = configureStore({
         page: testReducer
-      }, [
+      }, {}, [
         testMiddleware
       ])
       const connect = connectStore(store)
@@ -141,12 +141,11 @@ describe('midux', () => {
     it('can connect nested component with own props that scopes bound data', () => {
       const store = configureStore({
         page: testReducer
-      }, [
+      }, {}, [
         testMiddleware
       ])
       const connect = connectStore(store)
       const component = connect((state, props) => {
-        console.log(props)
         const messages = state.page.messages[props.chatId] || []
         return {
           messages

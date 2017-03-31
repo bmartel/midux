@@ -82,6 +82,8 @@ export const connectStore = (store) =>
         const storeState = mapStateToProps(this.store.getState(), ownProps)
 
         this.componentState(storeState)
+
+        m.redraw()
       }
 
       this.trySubscribe()
