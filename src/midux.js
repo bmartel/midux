@@ -83,7 +83,7 @@ export const connectStore = (store) =>
 
         this.componentState(storeState)
 
-        m.redraw()
+        setTimeout(m.redraw)
       }
 
       this.trySubscribe()
