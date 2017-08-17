@@ -8,6 +8,8 @@ import {
   defaultMapStateToProps,
   connectStore,
   configureStore,
+  getConnect,
+  getStore,
 } from '../src/midux'
 
 const UPDATE_TITLE = 'UPDATE_TITLE'
@@ -92,12 +94,30 @@ describe('midux', () => {
       expect(store).to.have.property('dispatch')
       expect(store).to.have.property('subscribe')
     })
+    it('can initialize a module store with reducers', () => {
+      configureStore({
+        page: testReducer
+      })
+      const store = getStore()
+      expect(store).to.have.property('dispatch')
+      expect(store).to.have.property('subscribe')
+    })
     it('can initialize store with middleware', () => {
       const store = configureStore({
         page: testReducer
       }, {}, [
         testMiddleware
       ])
+      expect(store).to.have.property('dispatch')
+      expect(store).to.have.property('subscribe')
+    })
+    it('can initialize a module store with middleware', () => {
+      configureStore({
+        page: testReducer
+      }, {}, [
+        testMiddleware
+      ])
+      const store = getStore()
       expect(store).to.have.property('dispatch')
       expect(store).to.have.property('subscribe')
     })
@@ -112,6 +132,16 @@ describe('midux', () => {
       const connect = connectStore(store)
       expect(connect).to.be.a('function')
     })
+    it('can initialize module based store connection', () => {
+      const store = configureStore({
+        page: testReducer
+      }, {}, [
+        testMiddleware
+      ])
+      connectStore(store)
+      const connect = getConnect()
+      expect(connect).to.be.a('function')
+    })
     it('can connect component to store', () => {
       const store = configureStore({
         page: testReducer
@@ -119,6 +149,19 @@ describe('midux', () => {
         testMiddleware
       ])
       const connect = connectStore(store)
+      const component = connect((state) => state.page)(testComponent)
+      const output = mq(m(component));
+
+      expect(output.first('.title')).to.have.property('text').and.equal('default title')
+    })
+    it('can connect component to store using module connection', () => {
+      const store = configureStore({
+        page: testReducer
+      }, {}, [
+        testMiddleware
+      ])
+      connectStore(store)
+      const connect = getConnect()
       const component = connect((state) => state.page)(testComponent)
       const output = mq(m(component));
 
@@ -138,6 +181,21 @@ describe('midux', () => {
       output.click('#updateTitle')
       expect(output.first('.title')).to.have.property('text').and.equal('updated title')
     })
+    it('can connect component with action and successfully dispatch an update using module connection', () => {
+      const store = configureStore({
+        page: testReducer
+      }, {}, [
+        testMiddleware
+      ])
+      connectStore(store)
+      const connect = getConnect()
+      const component = connect((state) => state.page, { testAction })(testComponent)
+      const output = mq(m(component));
+
+      expect(output.first('.title')).to.have.property('text').and.equal('default title')
+      output.click('#updateTitle')
+      expect(output.first('.title')).to.have.property('text').and.equal('updated title')
+    })
     it('can connect nested component with own props that scopes bound data', () => {
       const store = configureStore({
         page: testReducer
@@ -145,6 +203,28 @@ describe('midux', () => {
         testMiddleware
       ])
       const connect = connectStore(store)
+      const component = connect((state, props) => {
+        const messages = state.page.messages[props.chatId] || []
+        return {
+          messages
+        }
+      }, { testNestedAction })(testComponentProps)
+      const output = mq(m(component, { chatId: 1 }));
+
+      output.should.have(0, '.message');
+      output.click('#addMessage')
+      output.should.have(1, '.message');
+
+      expect(output.first('.message')).to.have.property('text').and.equal('this is a message')
+    })
+    it('can connect nested component with own props that scopes bound data using module connection', () => {
+      const store = configureStore({
+        page: testReducer
+      }, {}, [
+        testMiddleware
+      ])
+      connectStore(store)
+      const connect = getConnect()
       const component = connect((state, props) => {
         const messages = state.page.messages[props.chatId] || []
         return {
