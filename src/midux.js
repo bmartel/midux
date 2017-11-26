@@ -101,6 +101,11 @@ export const connectStore = (store) => {
 
       this.trySubscribe()
     },
+    
+    onbeforeremove(vnode) {
+      if (typeof component.onbeforeremove === "function")
+        return component.onbeforeremove(vnode)
+    },
 
     onremove(vnode) {
       this.actions = null
