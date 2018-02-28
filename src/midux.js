@@ -114,11 +114,11 @@ export const connectStore = (store) => {
       this.tryUnsubscribe()
     },
 
-    view (vnode, children) {
+    view (vnode) {
       const actions = this.actions
       const storeProps = this.componentState()
 
-      return m(component, { actions, ...storeProps, ...vnode.attrs}, children)
+      return m(component, { actions, ...storeProps, ...vnode.attrs}, vnode.children)
     }
   })
 
