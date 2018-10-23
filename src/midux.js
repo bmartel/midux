@@ -2,7 +2,7 @@
 import m from 'mithril'
 import prop from 'mithril/stream'
 import {
-  createStore,
+  createStore as createReduxStore,
   applyMiddleware,
   combineReducers,
   bindActionCreators
@@ -13,14 +13,7 @@ import {
  *
  * @returns {Function}
  */
-export const getStore = prop(null)
-
-/**
- * Provider function that returns contextual connection function for connecting components to the store
- *
- * @returns {Function}
- */
-export const getConnect = prop(null)
+export const store = prop(null)
 
 /**
  * Generates a new action creator for dispatching requests.
@@ -30,7 +23,7 @@ export const getConnect = prop(null)
  * @returns {Function}
  */
 export const makeActionCreator = (type, ...argNames) => (...args) => {
-  let action = { type }
+  const action = { type }
   argNames.forEach((arg, index) => {
     action[argNames[index]] = args[index]
   })
@@ -65,10 +58,9 @@ export const defaultMapStateToProps = (state, props) => state
  *
  * @param store
  */
-export const connectStore = (store) => {
-  const connection = (mapStateToProps, mapActionCreators = {}) => (component) => ({
+export const connect = (mapStateToProps, mapActionCreators = {}) => (component) => ({
     oninit(vnode) {
-      this.store = store
+      this.store = store()
       this.componentState = prop({})
       this.unsubscribe = null
       this.actions = bindActionCreators(mapActionCreators, this.store.dispatch)
@@ -101,7 +93,7 @@ export const connectStore = (store) => {
 
       this.trySubscribe()
     },
-    
+
     onbeforeremove(vnode) {
       if (typeof component.onbeforeremove === "function")
         return component.onbeforeremove(vnode)
@@ -122,12 +114,6 @@ export const connectStore = (store) => {
     }
   })
 
-  // cache the connection context
-  getConnect(connection)
-
-  return connection
-}
-
 /**
  * Configure store to use reducers/middleware
  *
@@ -136,17 +122,14 @@ export const connectStore = (store) => {
  * @param middleware
  * @returns {Store<S>}
  */
-export const configureStore = (reducers, initialState = {}, middleware = []) => {
-  const store = createStore(
+export const createStore = (reducers, initialState = {}, middleware = []) => {
+  store(createReduxStore(
     combineReducers(reducers),
     initialState,
     applyMiddleware(...middleware),
-  )
+  ))
 
-  // cache the store context
-  getStore(store)
-
-  return store
+  return store()
 }
 
 
