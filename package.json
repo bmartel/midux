@@ -1,6 +1,6 @@
 {
   "name": "midux",
-  "version": "2.0.2",
+  "version": "2.2.0",
   "description": "A simple adapter for mithril and redux",
   "main": "src/midux.js",
   "scripts": {
@@ -10,8 +10,13 @@
     "type": "git",
     "url": "git+https://github.com/bmartel/midux.git"
   },
-  "files": ["src"],
-  "keywords": ["Mithril", "Redux"],
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "Mithril",
+    "Redux"
+  ],
   "author": "Brandon Martel",
   "license": "MIT",
   "bugs": {
