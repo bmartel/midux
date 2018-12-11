@@ -1,19 +1,33 @@
 /* eslint-disable */
-import m from 'mithril'
-import prop from 'mithril/stream'
+import stream from "mithril/stream";
 import {
   createStore as createReduxStore,
   applyMiddleware,
   combineReducers,
   bindActionCreators
-} from 'redux'
+} from "redux";
+
+/**
+ * Mithril module reference. This is to ensure that the same redraw loop and internal module handling is in fact exact
+ * to the application itself.
+ * @type {Function}
+ */
+let m = null;
+
+/**
+ * Initialize the library to utilize the exact reference to mithril as the base application
+ * @param  {Function} mithrilModule reference to the application's mithril instance
+ */
+export const init = mithrilModule => {
+  m = mithrilModule;
+};
 
 /**
  * Provider function that returns configured store
  *
  * @returns {Function}
  */
-export const store = prop(null)
+export const store = stream(null);
 
 /**
  * Generates a new action creator for dispatching requests.
@@ -23,12 +37,12 @@ export const store = prop(null)
  * @returns {Function}
  */
 export const makeActionCreator = (type, ...argNames) => (...args) => {
-  const action = { type }
+  const action = { type };
   argNames.forEach((arg, index) => {
-    action[argNames[index]] = args[index]
-  })
-  return action
-}
+    action[argNames[index]] = args[index];
+  });
+  return action;
+};
 
 /**
  *  Generates a new reducer for handling action requests
@@ -37,13 +51,16 @@ export const makeActionCreator = (type, ...argNames) => (...args) => {
  * @param handlers
  * @returns {Function}
  */
-export const createReducer = (initialState, handlers) => (state = initialState, action) => {
+export const createReducer = (initialState, handlers) => (
+  state = initialState,
+  action
+) => {
   if (handlers.hasOwnProperty(action.type)) {
-    return handlers[action.type](state, action)
+    return handlers[action.type](state, action);
   } else {
-    return state
+    return state;
   }
-}
+};
 
 /**
  * Default prop to store mapping
@@ -51,68 +68,77 @@ export const createReducer = (initialState, handlers) => (state = initialState, 
  * @param state
  * @param props
  */
-export const defaultMapStateToProps = (state, props) => state
+export const defaultMapStateToProps = (state, props) => state;
 
 /**
  * Connect container component to redux store
  *
  * @param store
  */
-export const connect = (mapStateToProps, mapActionCreators = {}) => (component) => ({
-    oninit(vnode) {
-      this.store = store()
-      this.componentState = prop({})
-      this.unsubscribe = null
-      this.actions = bindActionCreators(mapActionCreators, this.store.dispatch)
+export const connect = (
+  mapStateToProps,
+  mapActionCreators = {}
+) => component => ({
+  oninit(vnode) {
+    this.store = store();
+    this.componentState = stream({});
+    this.unsubscribe = null;
+    this.actions = bindActionCreators(mapActionCreators, this.store.dispatch);
 
-      this.isSubscribed = () => typeof this.unsubscribe === 'function'
+    this.isSubscribed = () => typeof this.unsubscribe === "function";
 
-      this.trySubscribe = () => {
-        if (!this.isSubscribed()) {
-          this.unsubscribe = this.store.subscribe(this.handleUpdate.bind(this, vnode))
-          this.handleUpdate(vnode)
-        }
+    this.trySubscribe = () => {
+      if (!this.isSubscribed()) {
+        this.unsubscribe = this.store.subscribe(
+          this.handleUpdate.bind(this, vnode)
+        );
+        this.handleUpdate(vnode);
       }
+    };
 
-      this.tryUnsubscribe = () => {
-        if (this.isSubscribed()) {
-          this.unsubscribe()
-          this.unsubscribe = null
-        }
+    this.tryUnsubscribe = () => {
+      if (this.isSubscribed()) {
+        this.unsubscribe();
+        this.unsubscribe = null;
       }
+    };
 
-      this.handleUpdate = (vnode) => {
-        if (!this.isSubscribed()) return true
-        const ownProps = vnode.attrs || {}
-        const storeState = mapStateToProps(this.store.getState(), ownProps)
+    this.handleUpdate = vnode => {
+      if (!this.isSubscribed()) return true;
+      const ownProps = vnode.attrs || {};
+      const storeState = mapStateToProps(this.store.getState(), ownProps);
 
-        this.componentState(storeState)
+      this.componentState(storeState);
 
-        setTimeout(m.redraw)
-      }
+      setTimeout(m.redraw);
+    };
 
-      this.trySubscribe()
-    },
+    this.trySubscribe();
+  },
 
-    onbeforeremove(vnode) {
-      if (typeof component.onbeforeremove === "function")
-        return component.onbeforeremove(vnode)
-    },
+  onbeforeremove(vnode) {
+    if (typeof component.onbeforeremove === "function")
+      return component.onbeforeremove(vnode);
+  },
 
-    onremove(vnode) {
-      this.actions = null
-      this.store = null
-      this.componentState = null
-      this.tryUnsubscribe()
-    },
+  onremove(vnode) {
+    this.actions = null;
+    this.store = null;
+    this.componentState = null;
+    this.tryUnsubscribe();
+  },
 
-    view (vnode) {
-      const actions = this.actions
-      const storeProps = this.componentState()
+  view(vnode) {
+    const actions = this.actions;
+    const storeProps = this.componentState();
 
-      return m(component, { actions, ...storeProps, ...vnode.attrs}, vnode.children)
-    }
-  })
+    return m(
+      component,
+      { actions, ...storeProps, ...vnode.attrs },
+      vnode.children
+    );
+  }
+});
 
 /**
  * Configure store to use reducers/middleware
@@ -123,13 +149,13 @@ export const connect = (mapStateToProps, mapActionCreators = {}) => (component) 
  * @returns {Store<S>}
  */
 export const createStore = (reducers, initialState = {}, middleware = []) => {
-  store(createReduxStore(
-    combineReducers(reducers),
-    initialState,
-    applyMiddleware(...middleware),
-  ))
+  store(
+    createReduxStore(
+      combineReducers(reducers),
+      initialState,
+      applyMiddleware(...middleware)
+    )
+  );
 
-  return store()
-}
-
-
+  return store();
+};

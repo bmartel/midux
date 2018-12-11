@@ -1,144 +1,165 @@
-import 'jsdom-global/register'
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import m from 'mithril'
-import mq from 'mithril-query'
+import "jsdom-global/register";
+import { describe, it } from "mocha";
+import { expect } from "chai";
+import m from "mithril";
+import mq from "mithril-query";
 
 import {
   defaultMapStateToProps,
   connect,
   createStore,
   store as getStore,
-} from '../src/midux'
+  init as midux
+} from "../src/midux";
 
-const UPDATE_TITLE = 'UPDATE_TITLE'
-const UPDATE_MESSAGE = 'UPDATE_MESSAGE'
+// initialize mithril reference
+midux(m);
 
-const testAction = (title) => {
+const UPDATE_TITLE = "UPDATE_TITLE";
+const UPDATE_MESSAGE = "UPDATE_MESSAGE";
+
+const testAction = title => {
   return {
     type: UPDATE_TITLE,
-    title,
+    title
   };
-}
+};
 
 const testNestedAction = (id, message) => {
   return {
     type: UPDATE_MESSAGE,
     id,
-    message,
+    message
   };
-}
+};
 
 const messageReducer = (state = [], message) => {
-  return [
-    ...state,
-    message
-  ]
-}
+  return [...state, message];
+};
 
-const testReducer = (state = { messages: {}, title: 'default title' }, action) => {
+const testReducer = (
+  state = { messages: {}, title: "default title" },
+  action
+) => {
   switch (action.type) {
     case UPDATE_TITLE:
       return {
         ...state,
-        title: action.title,
+        title: action.title
       };
     case UPDATE_MESSAGE:
       return {
         ...state,
         messages: {
           ...state.messages,
-          [action.id]: messageReducer(state.messages[action.id], action.message),
-        },
+          [action.id]: messageReducer(state.messages[action.id], action.message)
+        }
       };
     default:
       return state;
   }
-}
+};
 
 const testMiddleware = store => next => action => {
-  console.log('dispatching', action)
-  let result = next(action)
-  console.log('next state', store.getState())
-  return result
-}
+  console.log("dispatching", action);
+  let result = next(action);
+  console.log("next state", store.getState());
+  return result;
+};
 
 const testComponent = {
   view(vnode) {
-     const { actions, title } = vnode.attrs
+    const { actions, title } = vnode.attrs;
 
-     return m('.testComponent', [
-       m('p.title', title),
-       m('button#updateTitle', { onclick: () => actions.testAction('updated title') })
-     ])
+    return m(".testComponent", [
+      m("p.title", title),
+      m("button#updateTitle", {
+        onclick: () => actions.testAction("updated title")
+      })
+    ]);
   }
-}
+};
 
 const testComponentProps = {
   view(vnode) {
-     const { actions, messages, chatId } = vnode.attrs
-     return m('.container', [
-       m('button#addMessage', { onclick: () => actions.testNestedAction(chatId, 'this is a message') }),
-       m('ul', messages.map(msg => m('li.message', msg))),
-     ])
+    const { actions, messages, chatId } = vnode.attrs;
+    return m(".container", [
+      m("button#addMessage", {
+        onclick: () => actions.testNestedAction(chatId, "this is a message")
+      }),
+      m("ul", messages.map(msg => m("li.message", msg)))
+    ]);
   }
-}
+};
 
-describe('midux', () => {
-
+describe("midux", () => {
   beforeEach(() => {
-    createStore({
+    createStore(
+      {
         page: testReducer
-      }, {}, [
-        testMiddleware
-      ]
-    )
-  })
+      },
+      {},
+      [testMiddleware]
+    );
+  });
 
-  describe('createStore', () => {
-    it('can initialize store with reducers', () => {
-      const store = getStore()
-      expect(store).to.have.property('dispatch')
-      expect(store).to.have.property('subscribe')
-    })
-    it('can initialize store with middleware', () => {
-      const store = getStore()
-      expect(store).to.have.property('dispatch')
-      expect(store).to.have.property('subscribe')
-    })
-  })
-  describe('connect', () => {
-    it('can initialize store connection', () => {
-      expect(connect).to.be.a('function')
-    })
-    it('can connect component to store', () => {
-      const component = connect((state) => state.page)(testComponent)
+  describe("createStore", () => {
+    it("can initialize store with reducers", () => {
+      const store = getStore();
+      expect(store).to.have.property("dispatch");
+      expect(store).to.have.property("subscribe");
+    });
+    it("can initialize store with middleware", () => {
+      const store = getStore();
+      expect(store).to.have.property("dispatch");
+      expect(store).to.have.property("subscribe");
+    });
+  });
+  describe("connect", () => {
+    it("can initialize store connection", () => {
+      expect(connect).to.be.a("function");
+    });
+    it("can connect component to store", () => {
+      const component = connect(state => state.page)(testComponent);
       const output = mq(m(component));
 
-      expect(output.first('.title')).to.have.property('text').and.equal('default title')
-    })
-    it('can connect component with action and successfully dispatch an update', () => {
-      const component = connect((state) => state.page, { testAction })(testComponent)
+      expect(output.first(".title"))
+        .to.have.property("text")
+        .and.equal("default title");
+    });
+    it("can connect component with action and successfully dispatch an update", () => {
+      const component = connect(state => state.page, { testAction })(
+        testComponent
+      );
       const output = mq(m(component));
 
-      expect(output.first('.title')).to.have.property('text').and.equal('default title')
-      output.click('#updateTitle')
-      expect(output.first('.title')).to.have.property('text').and.equal('updated title')
-    })
-    it('can connect nested component with own props that scopes bound data', () => {
-      const component = connect((state, props) => {
-        const messages = state.page.messages[props.chatId] || []
-        return {
-          messages
-        }
-      }, { testNestedAction })(testComponentProps)
+      expect(output.first(".title"))
+        .to.have.property("text")
+        .and.equal("default title");
+      output.click("#updateTitle");
+      expect(output.first(".title"))
+        .to.have.property("text")
+        .and.equal("updated title");
+    });
+    it("can connect nested component with own props that scopes bound data", () => {
+      const component = connect(
+        (state, props) => {
+          const messages = state.page.messages[props.chatId] || [];
+          return {
+            messages
+          };
+        },
+        { testNestedAction }
+      )(testComponentProps);
       const output = mq(m(component, { chatId: 1 }));
 
-      output.should.have(0, '.message');
-      output.click('#addMessage')
-      output.should.have(1, '.message');
+      output.should.have(0, ".message");
+      output.click("#addMessage");
+      output.should.have(1, ".message");
 
-      expect(output.first('.message')).to.have.property('text').and.equal('this is a message')
-    })
-  })
-})
+      expect(output.first(".message"))
+        .to.have.property("text")
+        .and.equal("this is a message");
+    });
+  });
+});
