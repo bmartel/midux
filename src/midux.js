@@ -15,6 +15,12 @@ import {
 let m = null;
 
 /**
+* This is function for unsabscribe redraw components
+* @type {Function}
+*/
+let unsubscribeRedraw = null;
+
+/**
  * Initialize the library to utilize the exact reference to mithril as the base application
  * @param  {Function} mithrilModule reference to the application's mithril instance
  */
@@ -92,6 +98,16 @@ export const connect = (
         this.unsubscribe = this.store.subscribe(
           this.handleUpdate.bind(this, vnode)
         );
+        
+        if (typeof unsubscribeRedraw === "function") {
+          unsubscribeRedraw();
+          unsubscribeRedraw = null;
+        }
+
+        unsubscribeRedraw = this.store.subscribe(
+          this.handleRedraw.bind(this)
+        );
+        
         this.handleUpdate(vnode);
       }
     };
@@ -109,7 +125,9 @@ export const connect = (
       const storeState = mapStateToProps(this.store.getState(), ownProps);
 
       this.componentState(storeState);
-
+    };
+    
+    this.handleRedraw = () => {
       setTimeout(m.redraw);
     };
 
